@@ -1,0 +1,30 @@
+{
+    "status": "success",
+    "message": "Search results retrieved successfully",
+    "data": [
+      {
+        "id": "fact-12345",
+        "concept_name": "Assets",
+        "concept_label": "Assets, Total",
+        "entity_id": "entity-123",
+        "entity_name": "Example Corp",
+        "period_end": "2022-12-31",
+        "value": 1000000.0,
+        "unit": "USD",
+        "report_id": "rpt-123456",
+        "filing_url": "https://www.sec.gov/Archives/edgar/data/1234567/000123456723000123/0001234567-23-000123-index.htm"
+      },
+      {
+        "id": "fact-23456",
+        "concept_name": "Assets",
+        "concept_label": "Assets, Total",
+        "entity_id": "entity-456",
+        "entity_name": "Another Company",
+        "period_end": "2022-12-31",
+        "value": 2500000.0,
+        "unit": "USD",
+        "report_id": "rpt-234567",
+        "filing_url": "https://www.sec.gov/Archives/edgar/data/2345678/000234567823000123/0002345678-23-000123-index.htm"
+      }
+    ]
+  }

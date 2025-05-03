@@ -1,0 +1,17 @@
+[
+  {
+    "name": "us-gaap",
+    "description": "US GAAP Taxonomy",
+    "version": "2022"
+  },
+  {
+    "name": "ifrs",
+    "description": "IFRS Taxonomy",
+    "version": "2022"
+  },
+  {
+    "name": "dei",
+    "description": "DEI Taxonomy",
+    "version": "2022"
+  }
+]

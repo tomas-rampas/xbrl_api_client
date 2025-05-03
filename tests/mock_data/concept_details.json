@@ -1,0 +1,35 @@
+{
+    "status": "success",
+    "message": "Concept details retrieved successfully",
+    "data": {
+      "name": "Assets",
+      "label": "Assets, Total",
+      "description": "Sum of the carrying amounts as of the balance sheet date of all assets that are recognized.",
+      "taxonomy": "us-gaap",
+      "type_name": "monetaryItemType",
+      "period_type": "instant",
+      "balance": "debit",
+      "standard_label": "Assets, Total",
+      "documentation": "Sum of the carrying amounts as of the balance sheet date of all assets that are recognized.",
+      "is_abstract": false,
+      "is_nillable": true,
+      "references": [
+        {
+          "name": "Publisher",
+          "value": "FASB"
+        },
+        {
+          "name": "Name",
+          "value": "Accounting Standards Codification"
+        },
+        {
+          "name": "Topic",
+          "value": "210"
+        },
+        {
+          "name": "SubTopic",
+          "value": "10"
+        }
+      ]
+    }
+  }
