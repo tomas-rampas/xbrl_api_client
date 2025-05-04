@@ -42,22 +42,19 @@ fn test_dotenv_loads_api_key() {
         env::remove_var("XBRL_API_KEY");
     }
     
-    // Create a temporary .env file with a test API key
+    // Create/overwrite the .env file with a test API key
     use std::fs::File;
     use std::io::Write;
     
     let env_content = "XBRL_API_KEY=test_api_key_from_dotenv";
-    let mut file = File::create(".env.test").unwrap();
+    let mut file = File::create(".env").unwrap();
     file.write_all(env_content.as_bytes()).unwrap();
     
-    // Load from our test .env file
-    dotenv::from_filename(".env.test").ok();
+    // Load from the .env file
+    dotenv::dotenv().ok();
     
     // Check if API key was loaded
     let api_key = env::var("XBRL_API_KEY");
-    
-    // Clean up the temporary .env file
-    std::fs::remove_file(".env.test").unwrap();
     
     // Restore environment
     if let Some(key) = original_api_key {
