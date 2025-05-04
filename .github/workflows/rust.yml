@@ -58,16 +58,55 @@ jobs:
           # Run tarpaulin and capture json output to a file
           cargo tarpaulin --out Json --output-dir coverage --workspace --exclude-files "tests/*" --verbose
           
-          # Extract the coverage value from the JSON file and save to environment
-          COVERAGE_VALUE=$(cat coverage/tarpaulin-report.json | jq '.summary.line_coverage * 100' | cut -d. -f1)
-          echo "Coverage value: $COVERAGE_VALUE%"
+          # Check if JSON file exists
+          if [ ! -f "coverage/tarpaulin-report.json" ]; then
+            echo "Error: tarpaulin-report.json not found"
+            exit 1
+          fi
+          
+          # Debug: output the JSON structure to understand it better
+          echo "JSON structure:"
+          cat coverage/tarpaulin-report.json
+          
+          # First, try to get the value directly from tarpaulin output - visible in the log
+          COVERAGE_RAW=$(grep -o '[0-9.]*% coverage' coverage/*.txt | grep -o '[0-9.]*' | head -1)
+          echo "Raw coverage from log: $COVERAGE_RAW%"
+          
+          # If that fails, try to extract it from the JSON
+          if [ -z "$COVERAGE_RAW" ]; then
+            # Save the JSON to a variable
+            JSON_CONTENT=$(cat coverage/tarpaulin-report.json)
+            
+            # Try different JSON paths that might contain coverage info
+            COVERAGE_RAW=$(echo "$JSON_CONTENT" | jq -r 'if .coverage != null then .coverage elif .report.coverage != null then .report.coverage elif .summary.line_coverage != null then (.summary.line_coverage * 100) else empty end')
+            
+            # If still empty, calculate from covered and total lines
+            if [ -z "$COVERAGE_RAW" ]; then
+              COVERED=$(echo "$JSON_CONTENT" | jq -r 'if .covered != null then .covered elif .report.covered != null then .report.covered else 0 end')
+              TOTAL=$(echo "$JSON_CONTENT" | jq -r 'if .total != null then .total elif .report.total != null then .report.total else 1 end')
+              
+              # Calculate percentage if both values are valid
+              if [ "$TOTAL" -ne 0 ]; then
+                COVERAGE_RAW=$(awk "BEGIN {printf \"%.2f\", ($COVERED/$TOTAL)*100}")
+              else
+                COVERAGE_RAW="0"
+              fi
+            fi
+          fi
+          
+          # Convert to integer (remove decimal part)
+          COVERAGE_VALUE=$(echo "$COVERAGE_RAW" | cut -d. -f1)
+          
+          # Ensure we have a valid number, default to 0 if not
+          if [[ ! "$COVERAGE_VALUE" =~ ^[0-9]+$ ]]; then
+            echo "Warning: Failed to extract valid coverage number, defaulting to 0"
+            COVERAGE_VALUE="0"
+          fi
+          
+          echo "Final coverage value: $COVERAGE_VALUE%"
           
           # Set outputs explicitly for use in later steps
           echo "coverage=$COVERAGE_VALUE" >> $GITHUB_OUTPUT
-          
-          # Debug output to verify it's being set
-          echo "Debug - Output values set:"
-          echo "coverage=$COVERAGE_VALUE"
           
           # Determine the color based on coverage value
           if [ "$COVERAGE_VALUE" -lt "60" ]; then
@@ -81,7 +120,6 @@ jobs:
           fi
           
           echo "color=$COLOR" >> $GITHUB_OUTPUT
-          echo "color=$COLOR"
           
           # Save in environment for later steps
           echo "COVERAGE_VALUE=$COVERAGE_VALUE" >> $GITHUB_ENV
