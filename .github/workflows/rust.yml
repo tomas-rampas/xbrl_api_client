@@ -32,21 +32,29 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Install cargo-tarpaulin
-        uses: actions-rs/install@v0.1
+          components: llvm-tools-preview
+
+      - name: Install grcov
+        run: |
+          curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf -
+          sudo mv grcov /usr/local/bin/
+      
+      - name: Generate coverage info
+        run: |
+          CARGO_INCREMENTAL=0 RUSTFLAGS="-Cinstrument-coverage" LLVM_PROFILE_FILE="cargo-test-%p-%m.profraw" cargo test --verbose
+          mkdir coverage
+          grcov . --binary-path ./target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage/lcov.info
+      
+      - name: List coverage files 
+        run: |
+          echo "Coverage files:"
+          ls -la coverage/
+      
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v1
         with:
-          crate: cargo-tarpaulin
-          version: latest
-          use-tool-cache: true
-      - name: Generate code coverage
-        run: cargo tarpaulin --verbose --workspace --timeout 120 --out Xml --output-dir ./coverage
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          directory: ./coverage/
-          fail_ci_if_error: true
+          file: coverage/lcov.info
+          fail_ci_if_error: false
+          verbose: true
