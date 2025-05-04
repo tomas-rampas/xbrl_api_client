@@ -55,7 +55,7 @@ jobs:
         id: coverage
         run: |
           # Run tarpaulin and save output to a file so we can parse it reliably
-          cargo tarpaulin --out Xml --output-dir coverage | tee tarpaulin_output.txt
+          cargo tarpaulin --out Xml --output-dir coverage --exclude-files "tests/*" --exclude-files "tests/mocks/*" | tee tarpaulin_output.txt
           # Extract coverage percentage using a more reliable method
           COVERAGE=$(grep -oP '\d+\.\d+(?=%)' tarpaulin_output.txt | head -1)
           # Format with percentage sign for badge using GitHub's environment files approach
