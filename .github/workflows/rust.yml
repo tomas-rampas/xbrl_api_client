@@ -27,7 +27,7 @@ jobs:
         run: cargo build --verbose
       
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: xbrl-api-client
           path: target/debug/xbrl_api_client
