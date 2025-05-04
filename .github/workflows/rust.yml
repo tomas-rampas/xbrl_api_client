@@ -83,23 +83,22 @@ jobs:
             echo "Test coverage meets threshold: $coverage_value% >= $MIN_COVERAGE_PERCENT%"
           fi
       
-      # Create coverage badge
-      - name: Create Badges Directory
-        run: mkdir -p .github/badges
-      
-      - name: Generate Coverage Badge
-        uses: emibcn/badge-action@v2
+      # Generate coverage badge on shields.io
+      - name: Generate and Publish Coverage Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
         with:
-          label: 'Coverage'
-          status: '${{ steps.coverage_check.outputs.coverage }}%'
-          color: '${{ steps.coverage_check.outputs.color }}'
-          path: '.github/badges/coverage.svg'
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ secrets.COVERAGE_GIST_ID }}
+          filename: coverage.json
+          label: Coverage
+          message: ${{ steps.coverage_check.outputs.coverage }}%
+          color: ${{ steps.coverage_check.outputs.color }}
+          namedLogo: rust
       
-      # Upload badge as workflow artifact (requires no additional permissions)
-      # This makes the badge available for download from the workflow run page
-      - name: Upload Badge as Artifact
+      # Additionally upload badge as workflow artifact
+      - name: Upload Coverage Report as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-badge
-          path: .github/badges/coverage.svg
-          if-no-files-found: error # Fail the workflow if the badge wasn't created
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: error
