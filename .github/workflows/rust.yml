@@ -1,4 +1,4 @@
-name: rust
+name: Rust CI with Coverage
 
 on:
   push:
@@ -6,97 +6,64 @@ on:
   pull_request:
     branches: [ main, master ]
 
-# Add permissions for the GITHUB_TOKEN
-permissions:
-  contents: write  # Needed for pushing the badge to the repository
-
 env:
   CARGO_TERM_COLOR: always
+  MIN_COVERAGE_PERCENT: 80 # Set your minimum coverage threshold here
 
 jobs:
-  build:
+  test_and_coverage:
+    name: Test and Coverage
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: stable
-    - name: Build
-      run: cargo build --verbose
-    - name: Run unit tests
-      run: cargo test --verbose --test unit_tests
-    - name: Run integration tests (mock server)
-      run: cargo test --verbose --test integration_tests
-
-  coverage:
-    runs-on: ubuntu-latest
-
-    steps:
-      # Check out the repository with necessary history for pushing changes
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history needed for proper git operations
-
-      # Set up Rust toolchain
+      - uses: actions/checkout@v4
+      
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-
-      # Install cargo-tarpaulin
-      - name: Install tarpaulin
+      
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+      
+      - name: Install Tarpaulin
         run: cargo install cargo-tarpaulin
-
-      # Run tests and generate coverage report
+      
       - name: Run tests with coverage
-        id: coverage
+        run: cargo tarpaulin --out Xml --output-dir coverage --workspace
+      
+      - name: Check coverage threshold
         run: |
-          # Run tarpaulin and save output to a file so we can parse it reliably
-          cargo tarpaulin --out Xml --output-dir coverage --exclude-files "tests/*" --exclude-files "tests/mocks/*" | tee tarpaulin_output.txt
-          # Extract coverage percentage using a more reliable method
-          COVERAGE=$(grep -oP '\d+\.\d+(?=%)' tarpaulin_output.txt | head -1)
-          # Format with percentage sign for badge using GitHub's environment files approach
-          echo "COVERAGE=${COVERAGE}%" >> $GITHUB_OUTPUT
-          echo "coverage=${COVERAGE}%" >> $GITHUB_ENV
-
-      # Create badges directory
-      - name: Create badges directory
-        run: mkdir -p .github/badges
-
-      # Generate coverage badge
-      - name: Generate coverage badge
-        uses: emibcn/badge-action@v2
-        with:
-          label: 'test coverage'
-          status: ${{ steps.coverage.outputs.COVERAGE }}
-          color: 'blue,555,daf'
-          path: .github/badges/coverage.svg
-
-      # Commit and push badge to repository
-      - name: Commit badge
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "GitHub Action"
-          git add .github/badges/coverage.svg
-          git commit -m "Update coverage badge" || echo "No changes to commit"
-          # Use token authentication for push to solve permission issues
-          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF#refs/heads/}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Upload coverage report as artifact
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage/cobertura.xml
-          
-      # Upload coverage to Codecov
-      - name: Upload coverage to Codecov
+          coverage_value=$(cargo tarpaulin --out Json --workspace | jq '.report.coverage' | sed 's/\..*$//')
+          if [ "$coverage_value" -lt "$MIN_COVERAGE_PERCENT" ]; then
+            echo "Test coverage is below threshold: $coverage_value% < $MIN_COVERAGE_PERCENT%"
+            exit 1
+          else
+            echo "Test coverage meets threshold: $coverage_value% >= $MIN_COVERAGE_PERCENT%"
+          fi
+      
+      - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
-          file: ./coverage/cobertura.xml
-          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/cobertura.xml
+          fail_ci_if_error: true
+  
+  build:
+    name: Build
+    needs: test_and_coverage # This makes build dependent on test_and_coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+      
+      - name: Build
+        run: cargo build --verbose
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: xbrl-api-client
+          path: target/debug/xbrl_api_client
