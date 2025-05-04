@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, master ]
 
+# Add permissions for the GITHUB_TOKEN
+permissions:
+  contents: write  # Needed for pushing the badge to the repository
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -13,7 +17,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
     - name: Install Rust
       uses: actions-rs/toolchain@v1
       with:
@@ -31,9 +36,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Check out the repository
+      # Check out the repository with necessary history for pushing changes
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed for proper git operations
 
       # Set up Rust toolchain
       - name: Install Rust
@@ -49,10 +56,12 @@ jobs:
       # Run tests and generate coverage report
       - name: Run tests with coverage
         run: |
-          cargo tarpaulin --out Xml --output-dir coverage
-          # Extract coverage percentage from tarpaulin output
-          COVERAGE=$(cargo tarpaulin --out Xml --output-dir coverage | grep -oP '\d+\.\d+%' | head -1)
-          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+          # Run tarpaulin and save output to a file so we can parse it reliably
+          cargo tarpaulin --out Xml --output-dir coverage | tee tarpaulin_output.txt
+          # Extract coverage percentage using a more reliable method
+          COVERAGE=$(grep -oP '\d+\.\d+(?=%)' tarpaulin_output.txt | head -1)
+          # Format with percentage sign for badge
+          echo "COVERAGE=${COVERAGE}%" >> $GITHUB_ENV
 
       # Create badges directory
       - name: Create badges directory
@@ -74,7 +83,8 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .github/badges/coverage.svg
           git commit -m "Update coverage badge" || echo "No changes to commit"
-          git push
+          # Use token authentication for push to solve permission issues
+          git push "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:${GITHUB_REF#refs/heads/}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -84,3 +94,10 @@ jobs:
         with:
           name: coverage-report
           path: coverage/cobertura.xml
+          
+      # Upload coverage to Codecov
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/cobertura.xml
+          fail_ci_if_error: false
