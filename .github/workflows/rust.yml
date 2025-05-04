@@ -1,22 +1,52 @@
-name: Rust
+name: rust
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ main, master ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
     - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      run: cd xbrl_api_client && cargo build --verbose
+    - name: Run unit tests
+      run: cd xbrl_api_client && cargo test --verbose --test unit_tests
+    - name: Run integration tests (mock server)
+      run: cd xbrl_api_client && cargo test --verbose --test integration_tests
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Install cargo-tarpaulin
+        uses: actions-rs/install@v0.1
+        with:
+          crate: cargo-tarpaulin
+          version: latest
+          use-tool-cache: true
+      - name: Generate code coverage
+        run: cd xbrl_api_client && cargo tarpaulin --verbose --workspace --timeout 120 --out Xml --output-dir ./coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./xbrl_api_client/coverage/
+          fail_ci_if_error: true

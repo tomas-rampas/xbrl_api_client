@@ -1,3 +1,4 @@
+use dotenv::dotenv;
 use xbrl_api_client::api::client::XbrlClient;
 use xbrl_api_client::api::models::SearchParams;
 use xbrl_api_client::data::facts::FactValue;
@@ -7,8 +8,11 @@ use xbrl_api_client::data::facts::FactValue;
 #[tokio::test]
 #[ignore]
 async fn test_library_integration() {
+    // Load environment variables from .env file if present
+    dotenv().ok();
+    
     // Get API key from environment
-    let api_key = std::env::var("XBRL_API_KEY").expect("XBRL_API_KEY must be set");
+    let api_key = std::env::var("XBRL_API_KEY").expect("XBRL_API_KEY must be set in environment or .env file");
     let client = XbrlClient::new(&api_key);
     
     // Test taxonomies

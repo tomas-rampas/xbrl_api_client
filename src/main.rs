@@ -5,12 +5,16 @@ mod utils;
 use api::client::XbrlClient;
 use api::models::SearchParams;
 use data::facts::FactValue;
+use dotenv::dotenv;
 use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Load environment variables from .env file if present
+    dotenv().ok();
+    
     // Get API key from environment variable
-    let api_key = env::var("XBRL_API_KEY").expect("XBRL_API_KEY must be set");
+    let api_key = env::var("XBRL_API_KEY").expect("XBRL_API_KEY must be set in environment or .env file");
     
     // Create client
     let client = XbrlClient::new(&api_key);
