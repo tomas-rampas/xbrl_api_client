@@ -51,36 +51,49 @@ jobs:
       - name: Run tests with coverage
         run: cargo tarpaulin --out Xml --output-dir coverage --workspace --exclude-files "tests/*" --verbose
       
-      - name: Check coverage threshold
+      - name: Calculate Coverage
         id: coverage_check
         run: |
           echo "Running coverage check..."
           # Run tarpaulin and capture json output to a file
           cargo tarpaulin --out Json --output-dir coverage --workspace --exclude-files "tests/*" --verbose
           
-          # Extract the coverage value from the JSON file
-          coverage_value=$(cat coverage/tarpaulin-report.json | jq '.summary.line_coverage * 100' | cut -d. -f1)
-          echo "Coverage value: $coverage_value%"
+          # Extract the coverage value from the JSON file and save to environment
+          COVERAGE_VALUE=$(cat coverage/tarpaulin-report.json | jq '.summary.line_coverage * 100' | cut -d. -f1)
+          echo "Coverage value: $COVERAGE_VALUE%"
           
-          # Set the coverage value as an output parameter
-          echo "coverage=$coverage_value" >> $GITHUB_OUTPUT
+          # Set outputs explicitly for use in later steps
+          echo "coverage=$COVERAGE_VALUE" >> $GITHUB_OUTPUT
+          
+          # Debug output to verify it's being set
+          echo "Debug - Output values set:"
+          echo "coverage=$COVERAGE_VALUE"
           
           # Determine the color based on coverage value
-          if [ "$coverage_value" -lt "60" ]; then
-            echo "color=f44336" >> $GITHUB_OUTPUT
-          elif [ "$coverage_value" -lt "70" ]; then
-            echo "color=ff9800" >> $GITHUB_OUTPUT
-          elif [ "$coverage_value" -lt "80" ]; then
-            echo "color=ffeb3b" >> $GITHUB_OUTPUT
+          if [ "$COVERAGE_VALUE" -lt "60" ]; then
+            COLOR="f44336"
+          elif [ "$COVERAGE_VALUE" -lt "70" ]; then
+            COLOR="ff9800"
+          elif [ "$COVERAGE_VALUE" -lt "80" ]; then
+            COLOR="ffeb3b"
           else
-            echo "color=4caf50" >> $GITHUB_OUTPUT
+            COLOR="4caf50"
           fi
           
-          if [ "$coverage_value" -lt "$MIN_COVERAGE_PERCENT" ]; then
-            echo "Test coverage is below threshold: $coverage_value% < $MIN_COVERAGE_PERCENT%"
+          echo "color=$COLOR" >> $GITHUB_OUTPUT
+          echo "color=$COLOR"
+          
+          # Save in environment for later steps
+          echo "COVERAGE_VALUE=$COVERAGE_VALUE" >> $GITHUB_ENV
+          echo "COVERAGE_COLOR=$COLOR" >> $GITHUB_ENV
+      
+      - name: Check coverage threshold
+        run: |
+          if [ "$COVERAGE_VALUE" -lt "$MIN_COVERAGE_PERCENT" ]; then
+            echo "Test coverage is below threshold: $COVERAGE_VALUE% < $MIN_COVERAGE_PERCENT%"
             exit 1
           else
-            echo "Test coverage meets threshold: $coverage_value% >= $MIN_COVERAGE_PERCENT%"
+            echo "Test coverage meets threshold: $COVERAGE_VALUE% >= $MIN_COVERAGE_PERCENT%"
           fi
       
       # Generate coverage badge on shields.io
@@ -91,8 +104,8 @@ jobs:
           gistID: ${{ secrets.COVERAGE_GIST_ID }}
           filename: coverage.json
           label: Coverage
-          message: ${{ steps.coverage_check.outputs.coverage }}%
-          color: ${{ steps.coverage_check.outputs.color }}
+          message: ${{ env.COVERAGE_VALUE }}%
+          color: ${{ env.COVERAGE_COLOR }}
           namedLogo: rust
       
       # Additionally upload badge as workflow artifact
