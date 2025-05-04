@@ -16,18 +16,12 @@ wiremock = "0.6.3"
 dotenv = "0.15.0"
 mockall = "0.12.1"
 
-[dev-dependencies]
-tarpaulin = "0.25.0"
-
 [package.metadata.tarpaulin]
 # Configure tarpaulin for coverage reporting
-version = "0.25.0"
 out-type = ["Xml", "Json"]
 output-dir = "coverage"
-# Set minimum coverage threshold
-coveralls = 80
 # Exclude test files from coverage calculation
-exclude = [
+exclude-files = [
     "tests/*",
     "**/test_*.rs"
 ]

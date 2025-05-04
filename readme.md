@@ -236,11 +236,14 @@ This project uses [cargo-tarpaulin](https://github.com/xd009642/tarpaulin) for c
 
 #### Build and Coverage Integration
 
-The GitHub Actions workflow is configured so that the build job is dependent on passing tests with adequate coverage. This enforces code quality standards by ensuring:
+The GitHub Actions workflow is configured with a two-stage process:
 
-1. All tests pass
-2. Code coverage meets or exceeds the 80% threshold
-3. Only then does the build proceed
+1. First, the project is built to ensure code compiles successfully
+2. Then, tests are run with coverage analysis to verify that:
+   - All tests pass
+   - Code coverage meets or exceeds the 80% threshold
+
+This enforces code quality standards by making test coverage a required step in the CI pipeline after a successful build.
 
 #### Running Coverage Checks Locally
 
@@ -275,21 +278,34 @@ You can also run coverage checks manually:
 
 ```bash
 # Install cargo-tarpaulin if not already installed
-cargo install cargo-tarpaulin
+cargo install cargo-tarpaulin --version 0.25.0
 
 # Generate coverage report
-cargo tarpaulin --verbose --workspace
+cargo tarpaulin --verbose --workspace --exclude-files "tests/*"
 ```
 
 For HTML reports, you can add the `--out Html` flag:
 
 ```bash
-cargo tarpaulin --out Html --output-dir coverage --workspace
+cargo tarpaulin --out Html --output-dir coverage --workspace --exclude-files "tests/*"
 ```
 
 #### Coverage Configuration
 
-Coverage settings are configured in `Cargo.toml` under the `[package.metadata.tarpaulin]` section. These settings define exclusions, output formats, and other parameters to ensure consistent coverage reporting.
+Coverage settings are configured in `Cargo.toml` under the `[package.metadata.tarpaulin]` section:
+
+```toml
+[package.metadata.tarpaulin]
+out-type = ["Xml", "Json"]
+output-dir = "coverage"
+exclude-files = [
+    "tests/*",
+    "**/test_*.rs"
+]
+verbose = true
+```
+
+These settings define exclusions, output formats, and other parameters to ensure consistent coverage reporting between local runs and CI.
 
 ## License
 

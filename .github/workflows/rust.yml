@@ -11,44 +11,8 @@ env:
   MIN_COVERAGE_PERCENT: 80 # Set your minimum coverage threshold here
 
 jobs:
-  test_and_coverage:
-    name: Test and Coverage
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-      
-      - name: Cache dependencies
-        uses: Swatinem/rust-cache@v2
-      
-      - name: Install Tarpaulin
-        run: cargo install cargo-tarpaulin
-      
-      - name: Run tests with coverage
-        run: cargo tarpaulin --out Xml --output-dir coverage --workspace
-      
-      - name: Check coverage threshold
-        run: |
-          coverage_value=$(cargo tarpaulin --out Json --workspace | jq '.report.coverage' | sed 's/\..*$//')
-          if [ "$coverage_value" -lt "$MIN_COVERAGE_PERCENT" ]; then
-            echo "Test coverage is below threshold: $coverage_value% < $MIN_COVERAGE_PERCENT%"
-            exit 1
-          else
-            echo "Test coverage meets threshold: $coverage_value% >= $MIN_COVERAGE_PERCENT%"
-          fi
-      
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/cobertura.xml
-          fail_ci_if_error: true
-  
   build:
     name: Build
-    needs: test_and_coverage # This makes build dependent on test_and_coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,3 +31,46 @@ jobs:
         with:
           name: xbrl-api-client
           path: target/debug/xbrl_api_client
+
+  test_and_coverage:
+    name: Test and Coverage
+    needs: build # This makes test_and_coverage dependent on build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+      
+      - name: Install Tarpaulin
+        run: cargo install cargo-tarpaulin --version 0.25.0
+      
+      - name: Run tests with coverage
+        run: cargo tarpaulin --out Xml --output-dir coverage --workspace --exclude-files "tests/*" --verbose
+      
+      - name: Check coverage threshold
+        run: |
+          echo "Running coverage check..."
+          # Run tarpaulin and capture json output to a file
+          cargo tarpaulin --out Json --output-dir coverage --workspace --exclude-files "tests/*" --verbose
+          
+          # Extract the coverage value from the JSON file
+          coverage_value=$(cat coverage/tarpaulin-report.json | jq '.summary.line_coverage * 100' | cut -d. -f1)
+          echo "Coverage value: $coverage_value%"
+          
+          if [ "$coverage_value" -lt "$MIN_COVERAGE_PERCENT" ]; then
+            echo "Test coverage is below threshold: $coverage_value% < $MIN_COVERAGE_PERCENT%"
+            exit 1
+          else
+            echo "Test coverage meets threshold: $coverage_value% >= $MIN_COVERAGE_PERCENT%"
+          fi
+      
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/cobertura.xml
+          fail_ci_if_error: true
