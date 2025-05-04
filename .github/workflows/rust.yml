@@ -62,11 +62,25 @@ jobs:
         run: |
           echo "Running coverage check..."
           # Run tarpaulin and capture json output to a file
-          # cargo tarpaulin --out Json --output-dir coverage --workspace --exclude-files "tests/*" --verbose
+          cargo tarpaulin --out Json --output-dir coverage --workspace --exclude-files "tests/*" --verbose
           
-          # Extract the coverage value from the JSON file and save to environment
-          COVERAGE_VALUE=$(cat coverage/tarpaulin-report.json | jq '.summary.line_coverage * 100' | cut -d. -f1)
-          echo "Coverage value: $COVERAGE_VALUE%"
+          # Check if the file exists and has valid JSON content
+          if [ -f coverage/tarpaulin-report.json ]; then
+            # First check if summary.line_coverage exists and is not null
+            if jq -e '.summary.line_coverage != null' coverage/tarpaulin-report.json > /dev/null; then
+              # Extract the coverage value from the JSON file and save to environment
+              COVERAGE_VALUE=$(cat coverage/tarpaulin-report.json | jq '.summary.line_coverage * 100' | cut -d. -f1)
+              echo "Coverage value: $COVERAGE_VALUE%"
+            else
+              echo "Warning: No valid line coverage data found in the report"
+              COVERAGE_VALUE=0
+              echo "Setting default coverage value: $COVERAGE_VALUE%"
+            fi
+          else
+            echo "Warning: Tarpaulin report file not found"
+            COVERAGE_VALUE=0
+            echo "Setting default coverage value: $COVERAGE_VALUE%"
+          fi
           
           # Set outputs explicitly for use in later steps
           echo "coverage=$COVERAGE_VALUE" >> $GITHUB_OUTPUT
@@ -92,7 +106,7 @@ jobs:
           # Save in environment for later steps
           echo "COVERAGE_VALUE=$COVERAGE_VALUE" >> $GITHUB_ENV
           echo "COVERAGE_COLOR=$COLOR" >> $GITHUB_ENV
-      
+
       - name: Check coverage threshold
         run: |
             if [ "${{ env.COVERAGE_VALUE }}" -lt "${{ env.MIN_COVERAGE_PERCENT }}" ]; then
