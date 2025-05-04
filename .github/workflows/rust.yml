@@ -20,11 +20,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
-        profile: minimal
         toolchain: stable
-        override: true
     - name: Build
       run: cargo build --verbose
     - name: Run unit tests
@@ -44,10 +42,9 @@ jobs:
 
       # Set up Rust toolchain
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          override: true
 
       # Install cargo-tarpaulin
       - name: Install tarpaulin
@@ -55,13 +52,15 @@ jobs:
 
       # Run tests and generate coverage report
       - name: Run tests with coverage
+        id: coverage
         run: |
           # Run tarpaulin and save output to a file so we can parse it reliably
           cargo tarpaulin --out Xml --output-dir coverage | tee tarpaulin_output.txt
           # Extract coverage percentage using a more reliable method
           COVERAGE=$(grep -oP '\d+\.\d+(?=%)' tarpaulin_output.txt | head -1)
-          # Format with percentage sign for badge
-          echo "COVERAGE=${COVERAGE}%" >> $GITHUB_ENV
+          # Format with percentage sign for badge using GitHub's environment files approach
+          echo "COVERAGE=${COVERAGE}%" >> $GITHUB_OUTPUT
+          echo "coverage=${COVERAGE}%" >> $GITHUB_ENV
 
       # Create badges directory
       - name: Create badges directory
@@ -71,8 +70,8 @@ jobs:
       - name: Generate coverage badge
         uses: emibcn/badge-action@v2
         with:
-          label: 'Test Coverage'
-          status: ${{ env.COVERAGE }}
+          label: 'test coverage'
+          status: ${{ steps.coverage.outputs.COVERAGE }}
           color: 'blue,555,daf'
           path: .github/badges/coverage.svg
 

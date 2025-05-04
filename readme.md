@@ -3,7 +3,6 @@
 A Rust client library for interacting with the XBRL US API. This library provides a comprehensive set of methods to fetch taxonomies, reports, facts, and other XBRL-related data.
 
 [![Build Status](https://github.com/tomas-rampas/xbrl_api_client/actions/workflows/rust.yml/badge.svg)](https://github.com/tomas-rampas/xbrl_api_client/actions/workflows/rust.yml)
-[![codecov](https://codecov.io/gh/tomas-rampas/xbrl_api_client/branch/main/graph/badge.svg)](https://codecov.io/gh/tomas-rampas/xbrl_api_client)
 [![Test Coverage](https://raw.githubusercontent.com/tomas-rampas/xbrl_api_client/master/.github/badges/coverage.svg?raw=true)](https://github.com/tomas-rampas/xbrl_api_client/actions/workflows/rust.yml)
 [![Rust](https://img.shields.io/badge/rust-stable-brightgreen.svg)](https://www.rust-lang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
