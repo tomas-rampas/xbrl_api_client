@@ -29,32 +29,58 @@ jobs:
 
   coverage:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: llvm-tools-preview
 
-      - name: Install grcov
-        run: |
-          curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf -
-          sudo mv grcov /usr/local/bin/
-      
-      - name: Generate coverage info
-        run: |
-          CARGO_INCREMENTAL=0 RUSTFLAGS="-Cinstrument-coverage" LLVM_PROFILE_FILE="cargo-test-%p-%m.profraw" cargo test --verbose
-          mkdir coverage
-          grcov . --binary-path ./target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage/lcov.info
-      
-      - name: List coverage files 
-        run: |
-          echo "Coverage files:"
-          ls -la coverage/
-      
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v1
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Rust toolchain
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
         with:
-          file: coverage/lcov.info
-          fail_ci_if_error: false
-          verbose: true
+          toolchain: stable
+          override: true
+
+      # Install cargo-tarpaulin
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin
+
+      # Run tests and generate coverage report
+      - name: Run tests with coverage
+        run: |
+          cargo tarpaulin --out Xml --output-dir coverage
+          # Extract coverage percentage from tarpaulin output
+          COVERAGE=$(cargo tarpaulin --out Xml --output-dir coverage | grep -oP '\d+\.\d+%' | head -1)
+          echo "COVERAGE=$COVERAGE" >> $GITHUB_ENV
+
+      # Create badges directory
+      - name: Create badges directory
+        run: mkdir -p .github/badges
+
+      # Generate coverage badge
+      - name: Generate coverage badge
+        uses: emibcn/badge-action@v2
+        with:
+          label: 'Test Coverage'
+          status: ${{ env.COVERAGE }}
+          color: 'blue,555,daf'
+          path: .github/badges/coverage.svg
+
+      # Commit and push badge to repository
+      - name: Commit badge
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "GitHub Action"
+          git add .github/badges/coverage.svg
+          git commit -m "Update coverage badge" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Upload coverage report as artifact
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/cobertura.xml
