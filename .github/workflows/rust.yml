@@ -67,10 +67,3 @@ jobs:
           else
             echo "Test coverage meets threshold: $coverage_value% >= $MIN_COVERAGE_PERCENT%"
           fi
-      
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/cobertura.xml
-          fail_ci_if_error: true
