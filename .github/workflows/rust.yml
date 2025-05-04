@@ -21,11 +21,11 @@ jobs:
         toolchain: stable
         override: true
     - name: Build
-      run: cd xbrl_api_client && cargo build --verbose
+      run: cargo build --verbose
     - name: Run unit tests
-      run: cd xbrl_api_client && cargo test --verbose --test unit_tests
+      run: cargo test --verbose --test unit_tests
     - name: Run integration tests (mock server)
-      run: cd xbrl_api_client && cargo test --verbose --test integration_tests
+      run: cargo test --verbose --test integration_tests
 
   coverage:
     runs-on: ubuntu-latest
@@ -44,9 +44,9 @@ jobs:
           version: latest
           use-tool-cache: true
       - name: Generate code coverage
-        run: cd xbrl_api_client && cargo tarpaulin --verbose --workspace --timeout 120 --out Xml --output-dir ./coverage
+        run: cargo tarpaulin --verbose --workspace --timeout 120 --out Xml --output-dir ./coverage
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          directory: ./xbrl_api_client/coverage/
+          directory: ./coverage/
           fail_ci_if_error: true
