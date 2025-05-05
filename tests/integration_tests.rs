@@ -225,3 +225,92 @@ fn test_server_error(mut test_context: TestContext) {
         }
     });
 }
+
+#[rstest]
+fn test_get_concepts(mut test_context: TestContext) {
+    // Arrange
+    run_async(test_context.mock_server.mock_concepts("us-gaap"));
+    
+    // Act & Assert
+    run_async(async {
+        let result = test_context.client.get_concepts("us-gaap").await;
+        
+        assert!(result.is_ok());
+        let concepts = result.unwrap();
+        assert_eq!(concepts.len(), 2);
+        assert_eq!(concepts[0].name, "Assets");
+        assert_eq!(concepts[0].taxonomy, "us-gaap");
+        assert_eq!(concepts[0].balance, Some("debit".to_string()));
+        assert_eq!(concepts[1].name, "Liabilities");
+    });
+}
+
+#[rstest]
+fn test_get_dimensions(mut test_context: TestContext) {
+    // Arrange
+    run_async(test_context.mock_server.mock_dimensions("us-gaap"));
+    
+    // Act & Assert
+    run_async(async {
+        let result = test_context.client.get_dimensions("us-gaap").await;
+        
+        assert!(result.is_ok());
+        let dimensions = result.unwrap();
+        assert_eq!(dimensions.len(), 2);
+        assert_eq!(dimensions[0].name, "LegalEntityAxis");
+        assert_eq!(dimensions[0].taxonomy, "us-gaap");
+        
+        // Check members
+        let members = dimensions[0].members.as_ref().unwrap();
+        assert_eq!(members.len(), 2);
+        assert_eq!(members[0].name, "ParentCompanyMember");
+        assert_eq!(members[1].name, "SubsidiaryMember");
+    });
+}
+
+#[rstest]
+fn test_get_networks(mut test_context: TestContext) {
+    // Arrange
+    run_async(test_context.mock_server.mock_networks("us-gaap"));
+    
+    // Act & Assert
+    run_async(async {
+        let result = test_context.client.get_networks("us-gaap").await;
+        
+        assert!(result.is_ok());
+        let networks = result.unwrap();
+        assert_eq!(networks.len(), 2);
+        assert_eq!(networks[0].id, "net-123");
+        assert_eq!(networks[0].name, "Statement of Financial Position");
+        assert_eq!(networks[0].short_name, Some("Balance Sheet".to_string()));
+        assert_eq!(networks[1].id, "net-456");
+        assert_eq!(networks[1].name, "Statement of Income");
+    });
+}
+
+#[rstest]
+fn test_get_network_details(mut test_context: TestContext) {
+    // Arrange
+    run_async(test_context.mock_server.mock_network_details("net-123"));
+    
+    // Act & Assert
+    run_async(async {
+        let result = test_context.client.get_network_details("net-123").await;
+        
+        assert!(result.is_ok());
+        let network = result.unwrap();
+        assert_eq!(network.id, "net-123");
+        assert_eq!(network.name, "Statement of Financial Position");
+        
+        // Check nodes
+        let nodes = network.nodes.as_ref().unwrap();
+        assert_eq!(nodes.len(), 2);
+        assert_eq!(nodes[0].concept_name, "Assets");
+        
+        // Check children
+        let children = nodes[0].children.as_ref().unwrap();
+        assert_eq!(children.len(), 2);
+        assert_eq!(children[0].concept_name, "CurrentAssets");
+        assert_eq!(children[1].concept_name, "NoncurrentAssets");
+    });
+}

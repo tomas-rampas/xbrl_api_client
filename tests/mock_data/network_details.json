@@ -1,0 +1,52 @@
+{
+  "status": "success",
+  "message": null,
+  "data": {
+    "id": "net-123",
+    "name": "Statement of Financial Position",
+    "short_name": "Balance Sheet",
+    "description": "Statement of Financial Position",
+    "taxonomy": "us-gaap",
+    "role": "http://www.example.com/role/StatementOfFinancialPosition",
+    "nodes": [
+      {
+        "concept_name": "Assets",
+        "concept_label": "Assets",
+        "parent": null,
+        "order": 1.0,
+        "level": 1,
+        "preferred_label": null,
+        "children": [
+          {
+            "concept_name": "CurrentAssets",
+            "concept_label": "Current Assets",
+            "parent": "Assets",
+            "order": 1.1,
+            "level": 2,
+            "preferred_label": null,
+            "children": null
+          },
+          {
+            "concept_name": "NoncurrentAssets",
+            "concept_label": "Noncurrent Assets",
+            "parent": "Assets",
+            "order": 1.2,
+            "level": 2,
+            "preferred_label": null,
+            "children": null
+          }
+        ]
+      },
+      {
+        "concept_name": "Liabilities",
+        "concept_label": "Liabilities",
+        "parent": null,
+        "order": 2.0,
+        "level": 1,
+        "preferred_label": null,
+        "children": null
+      }
+    ]
+  },
+  "errors": null
+}

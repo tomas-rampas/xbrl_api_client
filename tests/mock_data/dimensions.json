@@ -1,0 +1,43 @@
+{
+  "status": "success",
+  "message": null,
+  "data": [
+    {
+      "name": "LegalEntityAxis",
+      "label": "Legal Entity [Axis]",
+      "description": "Axis for legal entities",
+      "taxonomy": "us-gaap",
+      "members": [
+        {
+          "name": "ParentCompanyMember",
+          "label": "Parent Company [Member]",
+          "description": "Parent company"
+        },
+        {
+          "name": "SubsidiaryMember",
+          "label": "Subsidiary [Member]",
+          "description": null
+        }
+      ]
+    },
+    {
+      "name": "StatementScenarioAxis",
+      "label": "Statement Scenario [Axis]",
+      "description": "Axis for statement scenarios",
+      "taxonomy": "us-gaap",
+      "members": [
+        {
+          "name": "ActualMember",
+          "label": "Actual [Member]",
+          "description": "Reported figures"
+        },
+        {
+          "name": "ProjectedMember",
+          "label": "Projected [Member]",
+          "description": "Forecasted figures"
+        }
+      ]
+    }
+  ],
+  "errors": null
+}

@@ -1,0 +1,37 @@
+{
+  "status": "success",
+  "message": null,
+  "data": [
+    {
+      "name": "Assets",
+      "label": "Assets",
+      "description": "Total assets of an entity",
+      "taxonomy": "us-gaap",
+      "type_name": "monetaryItemType",
+      "period_type": "instant",
+      "balance": "debit",
+      "standard_label": "Assets, Total",
+      "documentation": "Sum of the carrying amounts as of the balance sheet date...",
+      "is_abstract": false,
+      "is_nillable": true,
+      "references": null,
+      "dimensions": null
+    },
+    {
+      "name": "Liabilities",
+      "label": "Liabilities",
+      "description": "Total liabilities of an entity",
+      "taxonomy": "us-gaap",
+      "type_name": "monetaryItemType",
+      "period_type": "instant",
+      "balance": "credit",
+      "standard_label": "Liabilities, Total",
+      "documentation": "Sum of the carrying amounts as of the balance sheet date...",
+      "is_abstract": false,
+      "is_nillable": true,
+      "references": null,
+      "dimensions": null
+    }
+  ],
+  "errors": null
+}

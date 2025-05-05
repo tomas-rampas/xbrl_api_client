@@ -1,10 +1,9 @@
 use serde_json::Value;
-#[macro_use]
-use serde_json;  // Bring in the macro
+use serde_json;  // No need for macro_use
 use std::fs;
 use std::path::Path;
 use wiremock::{
-    matchers::{method, path, query_param},
+    matchers::{method, path, path_regex, query_param},
     Mock, MockServer, ResponseTemplate,
 };
 
@@ -120,6 +119,49 @@ impl MockXbrlServer {
                     }))
             )
            .mount(&self.server)
+            .await;
+    }
+    
+    pub async fn mock_concepts(&mut self, taxonomy: &str) {
+        let response_body = load_mock_data("concepts.json");
+        
+        Mock::given(method("GET"))
+            .and(path("/concepts"))
+            .and(query_param("taxonomy", taxonomy))
+            .respond_with(ResponseTemplate::new(200).set_body_json(response_body))
+            .mount(&self.server)
+            .await;
+    }
+    
+    pub async fn mock_dimensions(&mut self, taxonomy: &str) {
+        let response_body = load_mock_data("dimensions.json");
+        
+        Mock::given(method("GET"))
+            .and(path("/dimensions"))
+            .and(query_param("taxonomy", taxonomy))
+            .respond_with(ResponseTemplate::new(200).set_body_json(response_body))
+            .mount(&self.server)
+            .await;
+    }
+    
+    pub async fn mock_networks(&mut self, taxonomy: &str) {
+        let response_body = load_mock_data("networks.json");
+        
+        Mock::given(method("GET"))
+            .and(path("/networks"))
+            .and(query_param("taxonomy", taxonomy))
+            .respond_with(ResponseTemplate::new(200).set_body_json(response_body))
+            .mount(&self.server)
+            .await;
+    }
+    
+    pub async fn mock_network_details(&mut self, network_id: &str) {
+        let response_body = load_mock_data("network_details.json");
+        
+        Mock::given(method("GET"))
+            .and(path(format!("/networks/{}", network_id)))
+            .respond_with(ResponseTemplate::new(200).set_body_json(response_body))
+            .mount(&self.server)
             .await;
     }
 }

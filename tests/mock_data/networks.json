@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "message": null,
+  "data": [
+    {
+      "id": "net-123",
+      "name": "Statement of Financial Position",
+      "short_name": "Balance Sheet",
+      "description": "Statement of Financial Position",
+      "taxonomy": "us-gaap",
+      "role": "http://www.example.com/role/StatementOfFinancialPosition",
+      "nodes": null
+    },
+    {
+      "id": "net-456",
+      "name": "Statement of Income",
+      "short_name": "Income Statement",
+      "description": "Statement of Income",
+      "taxonomy": "us-gaap",
+      "role": "http://www.example.com/role/StatementOfIncome",
+      "nodes": null
+    }
+  ],
+  "errors": null
+}
