@@ -1964,7 +1964,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "url",
- "windows-sys 0.59.0",
  "wiremock",
 ]
 

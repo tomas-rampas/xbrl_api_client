@@ -1,12 +1,12 @@
 use crate::api::endpoints::Endpoints;
-use crate::api::models::{ApiResponse, AuthHeader, PaginationParams, QueryParams, SearchParams};
+use crate::api::models::{ApiResponse, PaginationParams, QueryParams, SearchParams};
 use crate::data::facts::Fact;
 use crate::data::reports::Report;
 use crate::data::taxonomy::{Concept, Dimension, Network, Taxonomy};
 use crate::utils::errors::{XbrlApiError, XbrlResult};
 use reqwest::{Client, RequestBuilder};
 use serde::de::DeserializeOwned;
-use std::collections::HashMap;
+// HashMap is used in the with_pagination method through QueryParams
 
 /// XBRL API Client
 pub struct XbrlClient {
@@ -15,6 +15,7 @@ pub struct XbrlClient {
     endpoints: Endpoints,
 }
 
+#[allow(dead_code)]
 impl XbrlClient {
     /// Create a new XBRL API client with the default base URL
     pub fn new(api_key: &str) -> Self {

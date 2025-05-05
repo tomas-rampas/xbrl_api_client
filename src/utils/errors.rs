@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum XbrlApiError {
     #[error("HTTP error: {0}")]
     HttpError(#[from] reqwest::Error),

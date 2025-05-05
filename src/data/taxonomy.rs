@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+// use std::collections::HashMap;
 
 /// Taxonomy data structure
 #[derive(Debug, Serialize, Deserialize)]

@@ -32,7 +32,9 @@ pub struct SearchParams {
 }
 
 /// API Response wrapper
+/// status and errors fields are required by the API but not currently used directly in our code
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ApiResponse<T> {
     pub status: String,
     pub message: Option<String>,
@@ -47,4 +49,5 @@ pub struct AuthHeader {
 }
 
 /// Optional query parameters
+#[allow(dead_code)]
 pub type QueryParams = HashMap<String, String>;

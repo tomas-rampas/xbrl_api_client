@@ -14,6 +14,7 @@ impl Default for Endpoints {
     }
 }
 
+#[allow(dead_code)]
 impl Endpoints {
     /// Create a new Endpoints instance with a custom base URL
     pub fn new(base_url: &str) -> Self {

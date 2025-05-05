@@ -4,7 +4,7 @@ use serde_json;  // Bring in the macro
 use std::fs;
 use std::path::Path;
 use wiremock::{
-    matchers::{method, path, path_regex, query_param},
+    matchers::{method, path, query_param},
     Mock, MockServer, ResponseTemplate,
 };
 
