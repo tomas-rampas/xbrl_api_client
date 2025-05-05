@@ -1,1 +1,6 @@
 /target
+
+# Ignore .env files to avoid leaking API keys
+.env
+
+**/.claude/settings.local.json
