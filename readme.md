@@ -1,3 +1,8 @@
+> **⚠️ Info**
+>
+> **This project is no longer active.**  
+> Due to Perplexity's implementation of [Answers for Every Investor](https://www.perplexity.ai/hub/blog/answers-for-every-investor), this project has been discontinued.
+> 
 # XBRL API Client for Rust
 
 A Rust client library for interacting with the XBRL US API. This library provides a comprehensive set of methods to fetch taxonomies, reports, facts, and other XBRL-related data.
