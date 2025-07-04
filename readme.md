@@ -1,7 +1,7 @@
 > **⚠️ Info**
 >
 > **This project is no longer active.**  
-> Due to Perplexity's implementation of [Answers for Every Investor](https://www.perplexity.ai/hub/blog/answers-for-every-investor), this project has been discontinued.
+> Due to Perplexity's implementation of [SEC/EDGAR](https://www.perplexity.ai/hub/blog/answers-for-every-investor), this project has been discontinued.
 > 
 # XBRL API Client for Rust
 
